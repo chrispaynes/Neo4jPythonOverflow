@@ -1,0 +1,22 @@
+version: "3.7"
+services:
+    producer:
+        container_name: producer-overflow
+        build:
+            context: .
+            dockerfile: ./docker/python/Dockerfile
+        image: producer-overflow:latest
+        restart: always
+        volumes:
+            - "./producer/:/app"
+    neo4j:
+        container_name: neo4j-overflow
+        build:
+            context: .
+            dockerfile: ./docker/neo4j/Dockerfile
+        image: neo4j-overflow:latest
+        ports:
+            - "7474:7474"
+            - "7687:7687"
+        volumes:
+            - "./neo4j/data:/data"
