@@ -6,7 +6,8 @@ services:
             context: .
             dockerfile: ./docker/python/Dockerfile
         image: producer-overflow:latest
-        restart: always
+        depends_on:
+            - kafka1
         volumes:
             - "./producer/:/app"
     neo4j:
@@ -20,3 +21,29 @@ services:
             - "7687:7687"
         volumes:
             - "./neo4j/data:/data"
+    zookeeper:
+        container_name: zookeeper
+        build:
+            context: .
+            dockerfile: ./docker/zookeeper/Dockerfile
+        image: zookeeper-overflow:latest
+        ports:
+            - "2181:2181"
+    kafka1:
+        container_name: kafka1
+        build:
+            context: .
+            dockerfile: "./docker/kafka/Dockerfile"
+        image: kafka-overflow:latest
+        depends_on:
+            - zookeeper
+        restart: always
+        ports:
+            - "9092:9092"
+        environment:
+          KAFKA_ADVERTISED_HOST_NAME: 192.168.99.123
+          KAFKA_ZOOKEEPER_CONNECT: zookeeper:2181
+          KAFKA_CREATE_TOPICS: "questions:1::compact"
+          KAFKA_MESSAGE_MAX_BYTES: 1000000
+        volumes:
+          - /var/run/docker.sock:/var/run/docker.sock
